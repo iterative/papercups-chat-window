@@ -30,15 +30,19 @@ const EmailForm = ({
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setEmail(e.target.value);
 
-  const handleSendMessage = (e?: any) => {
-    e && e.preventDefault();
+  const handleSendMessage = (
+    e?:
+      | React.MouseEvent<HTMLButtonElement>
+      | React.KeyboardEvent<HTMLTextAreaElement>
+  ) => {
+    e?.preventDefault();
 
     onSendMessage({body: message}, email);
     setMessage('');
     setEmail('');
   };
 
-  const handleKeyDown = (e: any) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const {key, shiftKey} = e;
 
     if (!shiftKey && key === 'Enter') {
@@ -50,25 +54,25 @@ const EmailForm = ({
     <Flex
       py={2}
       px={3}
-      sx={{
+      css={{
         flex: 1,
         flexDirection: 'column',
         boxShadow: 'rgba(0, 0, 0, 0.2) 0px 21px 4px -20px inset',
         overflowY: 'scroll',
       }}
     >
-      <Box py={1} sx={{borderBottom: '1px solid rgb(230, 230, 230)'}}>
+      <Box py={1} css={{borderBottom: '1px solid rgb(230, 230, 230)'}}>
         <Input
-          sx={{variant: 'styles.input.transparent'}}
+          css={{variant: 'styles.input.transparent'}}
           placeholder={emailInputPlaceholder || 'email@example.com'}
           autoFocus
           value={email}
           onChange={handleEmailChange}
         />
       </Box>
-      <Box py={2} sx={{flex: 1}}>
+      <Box py={2} css={{flex: 1}}>
         <ResizableTextArea
-          sx={{
+          css={{
             fontFamily: 'body',
             color: 'input',
             variant: 'styles.input.transparent',
@@ -80,11 +84,11 @@ const EmailForm = ({
           onChange={handleMessageChange}
         />
       </Box>
-      <Flex sx={{justifyContent: 'flex-end'}}>
+      <Flex css={{justifyContent: 'flex-end'}}>
         <Button
           variant="link"
           type="submit"
-          sx={{
+          css={{
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',

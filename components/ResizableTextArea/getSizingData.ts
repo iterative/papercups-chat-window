@@ -26,7 +26,7 @@ const SIZING_STYLE = [
 ] as const;
 
 type SizingProps = Extract<
-  typeof SIZING_STYLE[number],
+  (typeof SIZING_STYLE)[number],
   keyof CSSStyleDeclaration
 >;
 
@@ -40,7 +40,11 @@ export type SizingData = {
 
 const isIE =
   typeof document !== 'undefined'
-    ? !!(document.documentElement as any).currentStyle
+    ? !!(
+        document.documentElement as HTMLElement & {
+          currentStyle?: CSSStyleDeclaration;
+        }
+      ).currentStyle
     : false;
 
 const getSizingData = (node: HTMLElement): SizingData | null => {
@@ -50,7 +54,10 @@ const getSizingData = (node: HTMLElement): SizingData | null => {
     return null;
   }
 
-  const sizingStyle = pick((SIZING_STYLE as unknown) as SizingProps[], style);
+  const sizingStyle = pick(
+    SIZING_STYLE as unknown as SizingProps[],
+    style as unknown as Record<string, string>
+  );
   const {boxSizing} = sizingStyle;
 
   // probably node is detached from DOM, can't read computed dimensions
@@ -62,21 +69,21 @@ const getSizingData = (node: HTMLElement): SizingData | null => {
   // so we need to add manually padding and border widths
   if (isIE && boxSizing === 'border-box') {
     sizingStyle.width =
-      parseFloat(sizingStyle.width!) +
-      parseFloat(sizingStyle.borderRightWidth!) +
-      parseFloat(sizingStyle.borderLeftWidth!) +
-      parseFloat(sizingStyle.paddingRight!) +
-      parseFloat(sizingStyle.paddingLeft!) +
+      parseFloat(sizingStyle.width as unknown as string) +
+      parseFloat(sizingStyle.borderRightWidth as unknown as string) +
+      parseFloat(sizingStyle.borderLeftWidth as unknown as string) +
+      parseFloat(sizingStyle.paddingRight as unknown as string) +
+      parseFloat(sizingStyle.paddingLeft as unknown as string) +
       'px';
   }
 
   const paddingSize =
-    parseFloat(sizingStyle.paddingBottom!) +
-    parseFloat(sizingStyle.paddingTop!);
+    parseFloat(sizingStyle.paddingBottom as unknown as string) +
+    parseFloat(sizingStyle.paddingTop as unknown as string);
 
   const borderSize =
-    parseFloat(sizingStyle.borderBottomWidth!) +
-    parseFloat(sizingStyle.borderTopWidth!);
+    parseFloat(sizingStyle.borderBottomWidth as unknown as string) +
+    parseFloat(sizingStyle.borderTopWidth as unknown as string);
 
   return {
     sizingStyle,

@@ -26,7 +26,7 @@ const ChatFooter = ({
   const [message, setMessage] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [isUploading, setIsUploading] = React.useState(false);
-  const [error, setError] = React.useState<any>(null);
+  const [error, setError] = React.useState<unknown>(null);
   const messageInput = React.useRef(null);
 
   const hasValidEmail = email && email.length > 5 && email.indexOf('@') !== -1;
@@ -39,15 +39,19 @@ const ChatFooter = ({
     setEmail(e.target.value);
 
   const handleSetEmail = (e?: React.FormEvent<HTMLFormElement>) => {
-    e && e.preventDefault();
+    e?.preventDefault();
 
     if (messageInput.current) {
       messageInput.current.focus();
     }
   };
 
-  const handleSendMessage = (e?: React.FormEvent<HTMLFormElement>) => {
-    e && e.preventDefault();
+  const handleSendMessage = (
+    e?:
+      | React.FormEvent<HTMLFormElement>
+      | React.KeyboardEvent<HTMLTextAreaElement>
+  ) => {
+    e?.preventDefault();
 
     onSendMessage({body: message}, email);
     setMessage('');
@@ -56,7 +60,7 @@ const ChatFooter = ({
 
   const handleUploadStarted = () => setIsUploading(true);
 
-  const handleUploadError = (err: any) => {
+  const handleUploadError = (err: unknown) => {
     setError(err);
     setIsUploading(false);
   };
@@ -71,7 +75,7 @@ const ChatFooter = ({
     }
   };
 
-  const handleKeyDown = (e: any) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const {key, shiftKey} = e;
 
     if (!shiftKey && key === 'Enter') {
@@ -98,7 +102,7 @@ const ChatFooter = ({
         <Flex sx={{alignItems: 'center'}} py={2}>
           <Box mr={2} sx={{flex: 1}}>
             <ResizableTextArea
-              sx={{
+              css={{
                 fontFamily: 'body',
                 color: 'input',
                 variant: 'styles.input.transparent',

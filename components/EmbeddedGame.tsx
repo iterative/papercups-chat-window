@@ -4,7 +4,7 @@ import {motion} from 'framer-motion';
 
 type Props = {
   isMobile?: boolean;
-  onLoadGame: (e: any) => void;
+  onLoadGame: (e: unknown) => void;
   onLeaveGame: () => void;
 };
 

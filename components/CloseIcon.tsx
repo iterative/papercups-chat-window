@@ -1,6 +1,3 @@
-/** @jsx jsx */
-import {jsx} from 'theme-ui';
-
 const CloseIcon = ({
   width,
   height,
@@ -10,7 +7,7 @@ const CloseIcon = ({
   width?: number;
   height?: number;
   className?: string;
-  onClick?: (e: any) => void;
+  onClick?: (e: unknown) => void;
 }) => {
   return (
     <svg

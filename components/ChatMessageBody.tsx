@@ -1,38 +1,17 @@
-import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import breaks from 'remark-breaks';
 import {Twemoji} from 'react-emoji-render';
 import {Box, Image} from 'theme-ui';
 import {Attachment} from '../helpers/types';
 
-/**
- * Whitelist node types that we allow when we render markdown.
- * Reference https://github.com/rexxars/react-markdown#node-types
- */
-export const allowedNodeTypes: any[] = [
-  'root',
-  'text',
-  'break',
-  'paragraph',
-  'emphasis',
-  'strong',
-  'blockquote',
-  'delete',
-  'link',
-  'linkReference',
-  'list',
-  'listItem',
-  'heading',
-  'inlineCode',
-  'code',
-  'image',
-];
-
 const renderers = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   text: (props: any) => {
     return <Twemoji text={props.children} />;
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   image: (props: any) => {
+    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
     return <img {...props} style={{maxWidth: '100%', maxHeight: 400}} />;
   },
 };
@@ -103,11 +82,11 @@ const ChatMessageBody = ({
     <Box sx={parsedSx}>
       <ReactMarkdown
         className={`Text--markdown ${className || ''}`}
-        source={content}
-        allowedTypes={allowedNodeTypes}
-        renderers={renderers}
-        plugins={[breaks]}
-      />
+        components={renderers}
+        remarkPlugins={[breaks]}
+      >
+        {content}
+      </ReactMarkdown>
       {attachments && attachments.length > 0 && (
         <Box mt={2} className={`Text--markdown ${className || ''}`}>
           {attachments.map((attachment) => {

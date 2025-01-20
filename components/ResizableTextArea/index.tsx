@@ -61,7 +61,7 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
   const libRef = React.useRef<HTMLTextAreaElement | null>(null);
   const ref = useComposedRef(libRef, userRef);
   const heightRef = React.useRef(0);
-  const measurementsCacheRef = React.useRef<SizingData>();
+  const measurementsCacheRef = React.useRef<SizingData | null>(null);
 
   const resizeTextarea = () => {
     const node = libRef.current!;
@@ -97,10 +97,14 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     onChange(event);
   };
 
-  if (typeof document !== 'undefined') {
-    React.useLayoutEffect(resizeTextarea);
-    useWindowResizeListener(resizeTextarea);
-  }
+  React.useLayoutEffect(() => {
+    if (typeof document !== 'undefined') {
+      resizeTextarea();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useWindowResizeListener(resizeTextarea);
 
   return <Textarea {...props} onChange={handleChange} ref={ref} />;
 };

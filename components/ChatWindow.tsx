@@ -63,7 +63,7 @@ type State = {
   messages: Array<Message>;
   customerId: string;
   conversationId: string | null;
-  availableAgents: Array<any>;
+  availableAgents: Array<{user_id: string; [key: string]: unknown}>;
   settings: WidgetSettings;
   isSending: boolean;
   isOpen: boolean;
@@ -75,7 +75,7 @@ type State = {
 };
 
 class ChatWindow extends React.Component<Props, State> {
-  scrollToEl: any = null;
+  scrollToEl: HTMLDivElement | null = null;
   subscriptions: Array<() => void> = [];
   logger: Logger;
   papercups: Papercups;
@@ -95,8 +95,8 @@ class ChatWindow extends React.Component<Props, State> {
       this.logger.debug('Analytics disabled.');
     }
 
-    const win = window as any;
-    const doc = (document || win.document) as any;
+    const win = window as Window;
+    const doc = (document || win.document) as Document;
 
     this.papercups = Papercups.init({
       customerId: props.customerId,
@@ -166,7 +166,7 @@ class ChatWindow extends React.Component<Props, State> {
     parent.postMessage({event, payload}, '*'); // TODO: remove?
   };
 
-  postMessageHandlers = (msg: any) => {
+  postMessageHandlers = (msg: MessageEvent) => {
     const {event, payload = {}} = msg.data;
     this.logger.debug('Handling in iframe:', msg.data);
 
@@ -190,7 +190,10 @@ class ChatWindow extends React.Component<Props, State> {
     }
   };
 
-  handleCustomerUpdated = (payload: any) => {
+  handleCustomerUpdated = (payload: {
+    customerId: string;
+    metadata?: {email?: string; external_id?: string};
+  }) => {
     const {customerId, metadata = {}} = payload;
     const {email = null, external_id: externalId = null} = metadata;
     const ts = this.props.ts || String(+new Date());
@@ -201,11 +204,12 @@ class ChatWindow extends React.Component<Props, State> {
       : this.papercups.identify(identifier, metadata);
   };
 
-  handleDisplayNotifications = (payload: any) => {
-    const {
-      shouldDisplayNotifications = false,
-      popUpInitialMessage = false,
-    } = payload;
+  handleDisplayNotifications = (payload: {
+    shouldDisplayNotifications?: boolean;
+    popUpInitialMessage?: boolean;
+  }) => {
+    const {shouldDisplayNotifications = false, popUpInitialMessage = false} =
+      payload;
 
     return this.setState(
       {
@@ -247,7 +251,7 @@ class ChatWindow extends React.Component<Props, State> {
     });
   };
 
-  onConversationCreated = (customerId: string, data: any) => {
+  onConversationCreated = (_, data: unknown) => {
     this.logger.debug('Handling conversation created:', data);
   };
 
@@ -281,13 +285,13 @@ class ChatWindow extends React.Component<Props, State> {
   };
 
   scrollIntoView = () => {
-    this.scrollToEl && this.scrollToEl.scrollIntoView(false);
+    this.scrollToEl?.scrollIntoView(false);
   };
 
   // If the page is not visible (i.e. user is looking at another tab),
   // we want to mark messages as read once the chat widget becomes visible
   // again, as long as it's open.
-  handleVisibilityChange = (e?: any) => {
+  handleVisibilityChange = (e?: Event) => {
     const doc = document || (e && e.target);
 
     if (isWindowHidden(doc)) {
@@ -302,7 +306,7 @@ class ChatWindow extends React.Component<Props, State> {
     }
   };
 
-  handlePapercupsPlan = (payload: any = {}) => {
+  handlePapercupsPlan = (payload: {plan?: string} = {}) => {
     this.logger.debug('Handling subscription plan:', payload);
 
     const {settings = {} as WidgetSettings} = this.state;
@@ -314,7 +318,7 @@ class ChatWindow extends React.Component<Props, State> {
     this.setState({shouldDisplayBranding});
   };
 
-  handleToggleDisplay = (payload: any = {}) => {
+  handleToggleDisplay = (payload: {isOpen?: boolean} = {}) => {
     const isOpen = !!payload.isOpen;
 
     this.setState({isOpen, isTransitioning: false}, () => {
@@ -361,14 +365,14 @@ class ChatWindow extends React.Component<Props, State> {
     this.emit('messages:unseen', {message});
   };
 
-  emitOpenWindow = (e: any) => {
+  emitOpenWindow = () => {
     this.emit('papercups:open', {});
     // This is the state where we are waiting for parent window to reply,
     // letting us know when the transition from closed to open is over
     this.setState({isTransitioning: true});
   };
 
-  emitCloseWindow = (e: any) => {
+  emitCloseWindow = () => {
     this.emit('papercups:close', {});
   };
 
@@ -460,7 +464,7 @@ class ChatWindow extends React.Component<Props, State> {
     }
   };
 
-  handleGameLoaded = (e: any) => {
+  handleGameLoaded = (e: React.SyntheticEvent<HTMLDivElement>) => {
     if (e.currentTarget && e.currentTarget.focus) {
       e.currentTarget.focus();
     }
@@ -502,7 +506,7 @@ class ChatWindow extends React.Component<Props, State> {
       message.quick_replies || message.metadata?.quick_replies || [];
 
     return replies.filter(
-      (reply: any): reply is QuickReply => !!reply.text && !!reply.action
+      (reply: QuickReply): reply is QuickReply => !!reply.text && !!reply.action
     );
   };
 
@@ -689,7 +693,11 @@ class ChatWindow extends React.Component<Props, State> {
             />
           ) : null}
 
-          <div ref={(el) => (this.scrollToEl = el)} />
+          <div
+            ref={(el) => {
+              this.scrollToEl = el;
+            }}
+          />
         </Box>
 
         {shouldDisplayBranding && <PapercupsBranding />}
@@ -718,6 +726,7 @@ class ChatWindow extends React.Component<Props, State> {
           />
         </Box>
 
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           alt="Papercups"
           src="https://papercups.s3.us-east-2.amazonaws.com/papercups-logo.svg"

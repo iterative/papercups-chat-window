@@ -1,5 +1,5 @@
 import React from 'react';
-import {ThemeProvider} from 'theme-ui';
+import {ThemeUIProvider} from 'theme-ui';
 import ChatWindow from './ChatWindow';
 import {CustomerMetadata} from '../helpers/types';
 import {setupPostMessageHandlers} from '../helpers/utils';
@@ -39,12 +39,12 @@ type Config = {
 const parseCustomerMetadata = (str: string): CustomerMetadata => {
   try {
     return JSON.parse(str);
-  } catch (err) {
+  } catch {
     return {} as CustomerMetadata;
   }
 };
 
-const sanitizeConfigPayload = (payload: any): Config => {
+const sanitizeConfigPayload = (payload: unknown): Config => {
   if (!payload) {
     return {};
   }
@@ -108,10 +108,12 @@ class Wrapper extends React.Component<Props, State> {
   }
 
   componentWillUnmount() {
-    this.unsubscribe && this.unsubscribe();
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
   }
 
-  postMessageHandlers = (msg: any) => {
+  postMessageHandlers = (msg: MessageEvent) => {
     this.logger.debug('Handling in wrapper:', msg.data);
     const {event, payload = {}} = msg.data;
 
@@ -123,7 +125,7 @@ class Wrapper extends React.Component<Props, State> {
     }
   };
 
-  handleConfigUpdate = (payload: any) => {
+  handleConfigUpdate = (payload: Partial<Config>) => {
     const updates = sanitizeConfigPayload(payload);
     this.logger.debug('Updating widget config:', updates);
 
@@ -169,7 +171,7 @@ class Wrapper extends React.Component<Props, State> {
     const customer = parseCustomerMetadata(metadata);
 
     return (
-      <ThemeProvider theme={theme}>
+      <ThemeUIProvider theme={theme}>
         <ChatWindow
           accountId={token || accountId}
           inboxId={inbox}
@@ -195,7 +197,7 @@ class Wrapper extends React.Component<Props, State> {
           version={version}
           ts={ts}
         />
-      </ThemeProvider>
+      </ThemeUIProvider>
     );
   }
 }

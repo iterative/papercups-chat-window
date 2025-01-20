@@ -1,4 +1,3 @@
-import React from 'react';
 import {Link, Flex} from 'theme-ui';
 import {motion} from 'framer-motion';
 import {PopupChatMessage} from './ChatMessage';
@@ -8,7 +7,7 @@ type Props = {
   messages: Array<Message>;
   newMessagesNotificationText?: string;
   isMobile?: boolean;
-  onOpen: (e: any) => void;
+  onOpen: (e: unknown) => void;
 };
 
 const UnreadMessages = ({
